@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import { uploadFile } from "../../actions/file"; // Подставьте свои собственные импорты
 
 function Disk() {
@@ -12,16 +12,17 @@ function Disk() {
 
     const handleFileUpload = () => {
         if (selectedFile) {
-            // Используйте Redux action для отправки файла на сервер с помощью Axios
             console.log(selectedFile)
             dispatch(uploadFile(selectedFile));
         } else {
             console.error('Выберите файл для загрузки');
         }
     };
-
+    const user = useSelector(state => state.user.currentUser)
+    console.log(user)
     return (
         <div>
+            <h1>Username: {user.username}</h1>
             <input type="file" onChange={handleFileChange} />
             <button onClick={handleFileUpload}>Загрузить файл</button>
         </div>

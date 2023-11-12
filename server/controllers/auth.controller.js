@@ -54,8 +54,10 @@ class AuthController {
             }
 
             const token = jwt.sign({ userId: user.rows[0].id }, process.env.JWT_SECRET || config.get('secretKey'), { expiresIn: '24h' });
-
+            console.log(`Login token ${token}`)
+            // В вашем контроллере на сервере
             return res.json({ token, user: { id: user.rows[0].id, username: user.rows[0].username } });
+
         } catch (e) {
             console.error('Login error', e);
             return res.status(500).json({ message: 'Login error' });
@@ -65,13 +67,14 @@ class AuthController {
     async checkAuth(req, res) {
         try {
             const token = req.headers.authorization.split(' ')[1];
+            console.log(`Auth token ${token}`)
 
             if (!token) {
                 return res.status(401).json({ message: 'Auth error - no token provided' });
             }
 
             const decoded = jwt.verify(token, process.env.JWT_SECRET || config.get('secretKey'));
-
+            console.log(`decoded auth ${decoded.userId}`)
             return res.json({ message: 'Auth successful', userId: decoded.userId });
         } catch (e) {
             console.error('Auth error', e);

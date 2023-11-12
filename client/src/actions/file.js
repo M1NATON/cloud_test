@@ -8,7 +8,7 @@ export const uploadFile = (file) => {
 
         // Здесь нужно указать URL для загрузки файла на сервер
         axios
-            .post('http://localhost:9000/api/auth/upload', formData, {
+            .post('http://localhost:9000/api/files/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
