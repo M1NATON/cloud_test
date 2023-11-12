@@ -1,0 +1,43 @@
+.header{
+
+}
+
+.logo{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    width: 100px;
+}
+
+.header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    background: aliceblue;
+    padding: 10px 30px;
+
+    min-height: 60px;
+}
+
+.auth{
+    display: flex;
+    justify-content: space-between;
+
+    width: 200px;
+
+    color: #000;
+}
+
+.link{
+    padding: 10px;
+    text-decoration: none;
+    transition: .3s;
+}
+
+.link:hover{
+    border-bottom: 1px solid #566885;
+}
+
+

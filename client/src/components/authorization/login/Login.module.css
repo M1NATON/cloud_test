@@ -1,0 +1,36 @@
+.main {
+    width: 500px;
+    margin: 150px auto;
+
+    text-align: center;
+
+    background: #fff;
+    padding: 20px;
+    border-radius: 20px ;
+}
+.title{
+    margin-bottom: 20px;
+}
+
+.inputs Input {
+    margin-bottom: 20px;
+}
+
+.btn{
+    transition: .3s all;
+
+}
+
+.btn button{
+    border: none;
+    color: #fff;
+    background: #566885;
+    font-size: 20px;
+    padding: 10px;
+    border-radius: 10px ;
+    transition: .3s all ;
+}
+
+.btn button:hover {
+    padding: 10px 40px;
+}
