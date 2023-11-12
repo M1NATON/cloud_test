@@ -14,7 +14,7 @@ export const uploadFile = (file) => {
                 },
             })
             .then((response) => {
-                console.log('Файл успешно загружен');
+                console.log('Файл успешно зерерагружен');
             })
             .catch((error) => {
                 console.error('Ошибка при загрузке файла', error);
