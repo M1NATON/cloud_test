@@ -1,82 +1,191 @@
+const fileService = require('../services/fileService');
+const { Pool } = require('pg');
+const config = require('config');
+const multer = require('multer');
+const fs = require('fs');
 const path = require('path');
-const uuid = require('uuid');
-const {Pool} = require("pg");
+const mkdirp = require('mkdirp').mkdirp; // Используем mkdirp из модуля mkdirp
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/') // Папка, куда будут сохраняться файлы
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.fieldname + '-' + Date.now()) // Имя файла сохраняется как поле_имя-штамп времени
+    }
+})
+
+const upload = multer({ storage: storage })
+
 const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
-    database: 'cloud_two',
+    database: 'cloud_test',
     password: '1324',
     port: 5432,
 });
 
 class FileController {
-    async uploadFile(req, res) {
+    async createDir(req, res) {
         try {
-            const file = req.files.file;
-            const parent_id = req.query.parent_id;
-            const user_id = req.user.userId;
-            const type = file.mimetype;
-            const size = file.size;
-            const name = uuid.v4() + path.extname(file.name);
-            const filePath = path.join(__dirname, '..', 'static', name);
-            const newFile = await pool.query('INSERT INTO files (name, type, size, path, user_id, parent_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *', [name, type, size, name, user_id, parent_id]);
+            const { name, type, parent } = req.body;
+            console.log('req.user для пути', req.body)
+            const file = { name, type, parent, user: req.user.id, path: req.body.name };
 
-            if (parent_id) {
-                await pool.query('UPDATE files SET updated_at = NOW() WHERE id = $1', [parent_id]);
+            const createdFolder = await fileService.createDir(file);
+
+            if (createdFolder.created) {
+                return res.json(file);
+            } else {
+                return res.status(400).json({ message: createdFolder.message });
             }
-
-            file.mv(filePath);
-            return res.json({ ...newFile.rows[0], path: '/static/' + name });
         } catch (e) {
-            console.error('Upload error', e);
-            return res.status(500).json({ message: 'Upload error' });
+            console.error(e);
+            return res.status(500).json({ message: 'Internal server error' });
         }
     }
 
     async getFiles(req, res) {
         try {
-            const user_id = req.user.userId;
-            const parent_id = req.query.parent_id;
+            const userId = parseInt(req.user.id); // Преобразуем к целому числу
+            const parentId = req.query.parent || null;
 
-            let files;
-            if (parent_id) {
-                files = await pool.query('SELECT * FROM files WHERE user_id = $1 AND parent_id = $2', [user_id, parent_id]);
-            } else {
-                files = await pool.query('SELECT * FROM files WHERE user_id = $1 AND parent_id IS NULL', [user_id]);
-            }
+            // Запрос файлов из базы данных
+            const getFilesQuery = 'SELECT * FROM files WHERE user_id = $1 AND parent_id = $2';
+            const { rows } = await pool.query(getFilesQuery, [userId, parentId]);
 
-            return res.json(files.rows);
-        } catch (e) {
-            console.error('Get files error', e);
-            return res.status(500).json({ message: 'Get files error' });
+            return res.json(rows);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: 'Internal server error' });
         }
     }
 
-
-    async deleteFile(req, res) {
+    async uploadFile(req, res) {
         try {
-            const { id } = req.params;
+            const file = req.file; // Получение файла из запроса
+            console.log('Запрос на загрузку файла:', req.file); // Вывод информации о файле из запроса
+            console.log('Информация о пользователе:', req.user);
+            const parent = await pool.query('SELECT * FROM files WHERE user_id = $1 AND id = $2', [req.user.id, req.body.parent]);
+            const user = await pool.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
+            // let disk_space = 10000;
+            // if (user.rows[0].used_space + file.size > user.rows[0].disk_space) {
+            //     return res.status(400).json({ message: 'There is not enough space on the disk' });
+            // }
 
-            // Найдите файл или папку в базе данных по id
-            const file = await File.findByPk(id);
+            // user.rows[0].used_space = user.rows[0].used_space + file.size;
 
-            if (!file) {
-                return res.status(404).json({ message: 'File not found' });
+            let path;
+            if (parent.rows.length > 0) {
+                path = `${config.get('filePath')}\\${user.rows[0].id}\\${parent.rows[0].path}\\${file.originalname}`;
+            } else {
+                path = `${config.get('filePath')}\\${user.rows[0].id}\\${file.originalname}`;
             }
 
-            // Удалите файл или папку из базы данных
-            await file.destroy();
+            const fileExistsQuery = 'SELECT * FROM files WHERE user_id = $1 AND path = $2';
+            const fileExists = await pool.query(fileExistsQuery, [req.user.id, path]);
 
-            // Дополнительно, удалите связанные файлы с сервера (если это папка, рекурсивно удалите все содержимое)
+            if (fileExists.rows.length > 0) {
+                return res.status(400).json({ message: 'File already exists' });
+            }
 
-            return res.json({ message: 'File deleted successfully' });
+            console.log('path', path);
+
+// Используем fs для копирования файла
+            const fs = require('fs');
+            fs.copyFile(file.path, path, async (err) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).json({ message: "Upload error" });
+                }
+                const type = file.originalname.split('.').pop();
+
+                const insertFileQuery = 'INSERT INTO files(name, type, size, path, parent_id, user_id) VALUES($1, $2, $3, $4, $5, $6) RETURNING *';
+                const dbFile = await pool.query(insertFileQuery, [file.originalname, type, file.size, parent.rows[0]?.path, parent.rows[0]?._id, req.user.id]);
+
+                await pool.query('UPDATE users SET used_space = $1 WHERE id = $2', [user.rows[0].used_space, req.user.id]);
+
+                res.json(dbFile.rows[0]);
+            });
         } catch (e) {
-            console.log(e);
-            return res.status(500).json({ message: 'Server error' });
+            console.error(e);
+            return res.status(500).json({ message: "Upload error" });
         }
     }
 
 
+    // async uploadFile(req, res) {
+    //     try {
+    //         console.log('Запрос на загрузку файла:', req.file);
+    //         console.log('Информация о пользователе:', req.user);
+    //
+    //         const file = req.file;
+    //         const filePath = path.join(config.get('filePath'), file.originalname);
+    //
+    //         // Используем fs.createReadStream и fs.createWriteStream для копирования файла
+    //         const readStream = fs.createReadStream(file.path);
+    //         const writeStream = fs.createWriteStream(filePath);
+    //
+    //         // Перенаправляем поток чтения в поток записи
+    //         readStream.pipe(writeStream);
+    //
+    //         // Обработка события окончания копирования файла
+    //         writeStream.on('finish', () => {
+    //             console.log('File saved at:', filePath);
+    //             res.json({ success: true, message: 'File uploaded successfully' });
+    //         });
+    //
+    //         // Обработка ошибок копирования файла
+    //         writeStream.on('error', (err) => {
+    //             console.error('File save error:', err);
+    //             res.status(500).json({ message: 'File save error' });
+    //         });
+    //     } catch (e) {
+    //         console.error(e);
+    //         return res.status(500).json({ message: "Upload error" });
+    //     }
+    // }
+
+
+
+
+
+
+    // async uploadFile(req, res) {
+    //     try {
+    //         const file = req.file;
+    //         console.log('Запрос на загрузку файла:', req.file);
+    //         console.log('Информация о пользователе:', req.user);
+    //
+    //         const parent = await pool.query('SELECT * FROM files WHERE user_id = $1 AND id = $2', [req.user.id, req.body.parent]);
+    //         const user = await pool.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    //
+    //         const filePath = parent.rows.length > 0 ?
+    //             path.join(config.get('filePath'), String(user.rows[0].id), String(parent.rows[0].path), file.originalname) :
+    //             path.join(config.get('filePath'), String(user.rows[0].id), file.originalname);
+    //
+    //         const fileExistsQuery = 'SELECT * FROM files WHERE user_id = $1 AND path = $2';
+    //         const fileExists = await pool.query(fileExistsQuery, [req.user.id, filePath]);
+    //
+    //         if (fileExists.rows.length > 0) {
+    //             return res.status(400).json({ message: 'File already exists' });
+    //         }
+    //
+    //         console.log('filePath', filePath);
+    //
+    //         await fs.mkdir(path.dirname(filePath), { recursive: true });
+    //         await fs.copyFile(file.path, filePath);
+    //
+    //         const type = file.originalname.split('.').pop();
+    //
+    //         const insertFileQuery = 'INSERT INTO files(name, type, size, path, parent_id, user_id) VALUES($1, $2, $3, $4, $5, $6) RETURNING *';
+    //         const dbFile = await pool.query(insertFileQuery, [file.originalname, type, file.size, parent.rows[0]?.path, parent.rows[0]?._id, req.user.id]);
+    //
+    //         res.json(dbFile.rows[0]);
+    //     } catch (e) {
+    //         console.error(e);
+    //         return res.status(500).json({ message: "Upload error" });
+    //     }
+    // }
 }
 
 module.exports = new FileController();

@@ -2,27 +2,58 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const { Pool } = require("pg");
-
+const { v4: uuidv4 } = require('uuid');
 const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
-    database: 'cloud_two',
+    database: 'cloud_test',
     password: '1324',
     port: 5432,
 });
 
 class AuthController {
+    // async registration(req, res) {
+    //     try {
+    //         const { username, email, password } = req.body;
+    //         const candidate = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+    //
+    //         if (candidate.rows.length) {
+    //             return res.status(400).json({ message: `User with username ${username} already exists` });
+    //         }
+    //
+    //         const hashedPassword = await bcrypt.hash(password, 12);
+    //         const newUser = await pool.query('INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *', [username, email, hashedPassword]);
+    //
+    //         if (!newUser.rows || newUser.rows.length === 0) {
+    //             return res.status(500).json({ message: 'User creation failed' });
+    //         }
+    //
+    //         const user = newUser.rows[0];
+    //         const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || config.get('secretKey'), { expiresIn: '24h' });
+    //
+    //         return res.json({ token, user: { id: user.id, username: user.username } });
+    //     } catch (e) {
+    //         console.error('Registration error', e);
+    //         return res.status(500).json({ message: 'Registration error' });
+    //     }
+    // }
+
     async registration(req, res) {
         try {
-            const { username, email, password } = req.body;
-            const candidate = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+            const {email, password } = req.body;
+            const candidate = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
             if (candidate.rows.length) {
-                return res.status(400).json({ message: `User with username ${username} already exists` });
+                return res.status(400).json({ message: `User with email ${email} already exists` });
             }
 
             const hashedPassword = await bcrypt.hash(password, 12);
-            const newUser = await pool.query('INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *', [username, email, hashedPassword]);
+            // Генерация уникального идентификатора для родительской директории
+
+            const newUser = await pool.query(
+                'INSERT INTO users (email, password) VALUES ($1, $2) RETURNING *',
+                [email, hashedPassword]
+            );
 
             if (!newUser.rows || newUser.rows.length === 0) {
                 return res.status(500).json({ message: 'User creation failed' });
@@ -31,7 +62,7 @@ class AuthController {
             const user = newUser.rows[0];
             const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || config.get('secretKey'), { expiresIn: '24h' });
 
-            return res.json({ token, user: { id: user.id, username: user.username } });
+            return res.json({ token, user: { id: user.id, email: user.email } });
         } catch (e) {
             console.error('Registration error', e);
             return res.status(500).json({ message: 'Registration error' });

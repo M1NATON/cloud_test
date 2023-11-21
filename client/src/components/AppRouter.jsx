@@ -1,9 +1,5 @@
 import React, {useContext, useEffect} from 'react';
-import {AuthContext} from "../context";
 import {Navigate, Route, Routes} from "react-router-dom";
-import Login from "./authorization/login/Login";
-import Registration from "./authorization/registration/Registration";
-import Disk from "./disk/Disk";
 import {privateRoutes, publicRoutes} from "../router/routes";
 import {useDispatch, useSelector} from "react-redux";
 import {auth} from "../actions/user";

@@ -1,6 +1,12 @@
 {
-  "serverPort" : 9000,
-  "filePath": "C:\\Users\\tim\\Desktop\\mern-cloud-disk\\server\\files",
-  "secretKey": "mernsecketkey"
+  "serverPort": 9000,
+  "db": {
+    "user": "postgres",
+    "host": "localhost",
+    "database": "cloud_test",
+    "password": "1324",
+    "port": 5432
+  },
+  "secretKey": "mern-secret-key",
+  "filePath": "C:\\Users\\User\\Desktop\\HLAM\\testik\\server\\uploads"
 }
-

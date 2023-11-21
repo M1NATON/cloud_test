@@ -1,9 +1,11 @@
 const SET_USER = "SET_USER"
 const LOGOUT = "LOGOUT"
 
+const token = localStorage.getItem('token');
+
 const defaultState = {
     currentUser: {},
-    isAuth: false
+    isAuth: token ? true : false // Устанавливаем isAuth в true, если токен существует в localStorage
 }
 
 export default function userReducer(state = defaultState, action) {

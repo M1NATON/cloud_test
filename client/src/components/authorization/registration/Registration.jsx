@@ -6,7 +6,6 @@ import {registration} from "../../../actions/user";
 
 const Registration = () => {
 
-     const [username, setUsername] = useState('')
      const [email, setEmail] = useState('')
      const [password, setPassword] = useState('')
 
@@ -18,12 +17,7 @@ const Registration = () => {
                         <h2>Регистрация</h2>
                     </div>
                     <div className={s.inputs}>
-                        <Input type='text'
-                               placeholder="Введите логин..."
-                               value={username}
-                               setValue={setUsername}
 
-                        />
                         <Input type='text'
                                placeholder="Введите email..."
                                value={email}
@@ -36,7 +30,7 @@ const Registration = () => {
                         />
                     </div>
                     <div className={s.btn}>
-                        <button onClick={() => registration(username, email, password)}>Зарегистрироваться</button>
+                        <button onClick={() => registration(email, password)}>Зарегистрироваться</button>
                     </div>
                 </div>
             </div>

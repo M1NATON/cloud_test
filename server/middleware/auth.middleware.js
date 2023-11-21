@@ -7,15 +7,25 @@ module.exports = (req, res, next) => {
     }
 
     try {
-        const token = req.headers.authorization.split(' ')[1];
-        if (!token) {
-            return res.status(401).json({ message: 'Auth error' });
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            console.log('err');
+            return res.status(401).json({ message: 'Auth error: Token is missing or invalid' });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || config.get('secretKey'));
+        const token = authHeader.split(' ')[1];
+        if (!token) {
+            console.log('err'); // Добавьте логирование здесь, чтобы проверить, что токен успешно расшифрован
+
+            return res.status(401).json({ message: 'Auth error: Token is missing or invalid' });
+        }
+
+        const decoded = jwt.verify(token, config.get('secretKey'));
+        console.log('decoded token:', decoded); // Добавьте логирование здесь, чтобы проверить, что токен успешно расшифрован
         req.user = decoded;
         next();
     } catch (e) {
-        return res.status(401).json({ message: 'Auth error' });
+        console.log('err');
+        return res.status(401).json({ message: 'Auth error: Invalid token' });
     }
 };

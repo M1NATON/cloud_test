@@ -36,7 +36,7 @@ const Login = () => {
                         />
                     </div>
                     <div className={s.btn}>
-                        <button onClick={handleLogin}>войти</button>
+                        <button onClick={() =>dispatch(login(username, password))}>войти</button>
                     </div>
                 </div>
             </div>
