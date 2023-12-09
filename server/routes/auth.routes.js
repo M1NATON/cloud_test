@@ -23,65 +23,6 @@ router.post('/registration',
         check('email', "Uncorrect email").isEmail(),
         check('password', 'Password must be longer than 3 and shorter than 12').isLength({min:3, max:12})
     ],
-    // async (req, res) => {
-    //     try {
-    //         const errors = validationResult(req)
-    //         if (!errors.isEmpty()) {
-    //             return res.status(400).json({message: "Uncorrect request", errors})
-    //         }
-    //         const {email, password} = req.body
-    //         const checkUserQuery = 'SELECT * FROM users WHERE email = $1';
-    //         const userExists = await pool.query(checkUserQuery, [email]);
-    //         if(userExists.rows.length > 0) {
-    //             return res.status(400).json({message: `User with email ${email} already exists`})
-    //         }
-    //         const hashPassword = await bcrypt.hash(password, 8);
-    //         const insertUserQuery = 'INSERT INTO users(email, password) VALUES($1, $2) RETURNING *';
-    //         const insertedUser = await pool.query(insertUserQuery, [email, hashPassword]);
-    //         await pool.query('INSERT INTO files(user_id, name, type, path) VALUES($1, $2, $3, $4)', [insertedUser.rows[0].id, email, 'dirname', fileService.createDir(new File({user:user.id, name: ''}))]); // Create file entry for user
-    //         res.json({message: "User was created"});
-    //     } catch (e) {
-    //         console.log(e);
-    //         // res.send({message: "Server error123"});
-    //     }
-    // });
-
-    // async (req, res) => {
-    //     try {
-    //         const errors = validationResult(req);
-    //         if (!errors.isEmpty()) {
-    //             return res.status(400).json({ message: "Uncorrect request", errors });
-    //         }
-    //         const { email, password } = req.body;
-    //
-    //         // Проверяем, существует ли пользователь с таким email
-    //         const checkUserQuery = 'SELECT * FROM users WHERE email = $1';
-    //         const userExists = await pool.query(checkUserQuery, [email]);
-    //
-    //         if (userExists.rows.length > 0) {
-    //             return res.status(400).json({ message: `User with email ${email} already exists` });
-    //         }
-    //
-    //         // Хэшируем пароль
-    //         const hashPassword = await bcrypt.hash(password, 8);
-    //
-    //         // Вставляем нового пользователя в таблицу users
-    //         const insertUserQuery = 'INSERT INTO users(email, password) VALUES($1, $2) RETURNING *';
-    //         const insertedUser = await pool.query(insertUserQuery, [email, hashPassword]);
-    //
-    //         // Создаем запись о файле для пользователя в таблице files
-    //         const fileName = email; // Укажите имя файла, которое вы хотите создать
-    //         const fileType = 'dirname'; // Укажите тип файла (например, директория)
-    //         const filePath = `${config.get('filePath')}\\${email}`; // Укажите путь для файла
-    //         const createFileQuery = 'INSERT INTO files(user_id, name, type, path) VALUES($1, $2, $3, $4)';
-    //         await pool.query(createFileQuery, [insertedUser.rows[0].id, fileName, fileType, filePath]);
-    //
-    //         res.json({ message: "User was created" });
-    //     } catch (e) {
-    //         console.error(e);
-    //         // res.status(500).send({ message: "Server error" });
-    //     }
-    // });
 
 
 
@@ -136,6 +77,7 @@ router.post('/login',
             const userQuery = 'SELECT * FROM users WHERE email = $1';
             const userData = await pool.query(userQuery, [email]);
 
+
             if (userData.rows.length === 0) {
                 return res.status(404).json({ message: "User not found" });
             }
@@ -170,8 +112,7 @@ router.get('/auth', authMiddleware,
         try {
             const userQuery = 'SELECT * FROM users WHERE id = $1';
             const userData = await pool.query(userQuery, [req.user.id]);
-            console.log('req.user в файле auth.routes')
-            console.log(req.user)
+
             if (userData.rows.length === 0) {
                 return res.status(404).json({ message: "User not found" });
             }

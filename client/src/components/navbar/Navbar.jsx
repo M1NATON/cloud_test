@@ -15,7 +15,6 @@ const Navbar = () => {
 
     const dispatch = useDispatch();
 
-    console.log('navbar auth' + ' ' + isAuth)
 
     useEffect(() => {
         dispatch(auth());

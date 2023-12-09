@@ -1,60 +1,58 @@
-// import axios from 'axios'
-// import {addFile, setFiles} from "../reducers/fileReducer";
-//
-// export function getFiles(dirId) {
-//     return async dispatch => {
-//         try {
-//             const response = await axios.get(`http://localhost:5000/api/files${dirId ? '?parent='+dirId : ''}`, {
-//                 headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}
-//             })
-//             dispatch(setFiles(response.data))
-//         } catch (e) {
-//             alert(e.response.data.message)
-//         }
-//     }
-// }
-//
-// export function createDir(dirId, name) {
-//     return async dispatch => {
-//         try {
-//             const response = await axios.post(`http://localhost:5000/api/files`,{
-//                 name,
-//                 parent: dirId,
-//                 type: 'dir'
-//             }, {
-//                 headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}
-//             })
-//             dispatch(addFile(response.data))
-//         } catch (e) {
-//             alert(e.response.data.message)
-//         }
-//     }
-// }
+import axios from 'axios'
+import {setFiles, deleteFile} from "../reducers/fileReducer";
+
 
 export const uploadFile = (file) => {
     return async (dispatch) => {
         try {
             const formData = new FormData();
-            formData.append('file', file, file.name);
+            formData.append('file', new Blob([file], { type: file.type }), encodeURIComponent(file.name)); // Явно указываем кодировку
 
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:9000/api/files/upload', {
-                method: 'POST',
+            const response = await axios.post('http://localhost:9000/api/files/upload', formData, {
                 headers: {
+                    'Content-Type': 'multipart/form-data; charset=utf-8',
                     Authorization: `Bearer ${token}`,
                 },
-                body: formData, // Переместите formData в свойство body
             });
 
-            if (!response.ok) {
-                throw new Error('File upload failed');
-            }
-
-            const result = await response.json();
-            dispatch({ type: 'UPLOAD_SUCCESS', payload: result });
+            dispatch({ type: 'ADD_FILE', payload: response.data });
         } catch (error) {
-            dispatch({ type: 'UPLOAD_FAILURE', payload: error.message });
+            console.log(error);
         }
     };
 };
 
+
+export const getFile = () => {
+    return async dispatch => {
+        try {
+            const response = await axios.get('http://localhost:9000/api/files', {
+                headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}
+            })
+            console.log('localStorage.getItem(\'token\')', localStorage.getItem('token'))
+            dispatch(setFiles(response.data))
+            console.log('response.data', response.data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+}
+
+export const deleteFileRequest  = (userId, fileId) => {
+    return async dispatch => {
+        try {
+            // console.log(fileId, 'файл айди в файле file.js ')
+            const response = await axios.delete(`http://localhost:9000/api/files/${userId}/${fileId}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            })
+
+        return response.data
+        } catch (error) {
+            console.error('Delete file error', error);
+            // throw new Error('Failed to delete file');
+        }
+    }
+}

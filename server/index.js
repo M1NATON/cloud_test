@@ -6,6 +6,7 @@ const fileRouter = require("./routes/file.routes");
 const app = express();
 const PORT = config.get('serverPort');
 const corsMiddleware = require('./middleware/cors.middleware');
+const cors = require('cors');
 
 const pool = new Pool({
     user: 'postgres',
@@ -15,6 +16,8 @@ const pool = new Pool({
     port: 5432,
 });
 
+
+app.use(cors());
 app.use(corsMiddleware);
 app.use(express.json());
 app.use("/api/auth", authRouter);

@@ -10,7 +10,6 @@ export const registration = async (email, password) => {
             password
         })
         alert(response.data.message)
-        console.log(response.data)
 
     } catch (e) {
         // alert(e.response.data.message)
@@ -27,7 +26,6 @@ export const login = (email, password) => {
                 password
             });
 
-            console.log(response.data);
             const token = response.data.token;
             if (token) {
                 dispatch(setUser(response.data.user));
@@ -52,8 +50,7 @@ export const auth = () => {
             const response = await axios.get(`http://localhost:9000/api/auth/auth`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            console.log(`response проверка снизу`)
-            console.log(response)
+
             dispatch(setUser(response.data.user));
             localStorage.setItem('token', response.data.token);
         } catch (e) {
