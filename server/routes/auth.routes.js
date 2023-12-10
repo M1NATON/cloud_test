@@ -59,7 +59,7 @@ router.post('/registration',
             const folderPath = `${config.get('filePath')}/${insertedUser.rows[0].id}`; // Путь, по которому вы хотите создать папку
             fs.mkdirSync(folderPath, { recursive: true });
 
-            res.json({ message: "User was created" });
+            res.json({ message: "Вы успешно зарегистрировались" });
         } catch (e) {
             console.error(e);
             // res.status(500).send({ message: "Server error" });

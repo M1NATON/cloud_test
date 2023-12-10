@@ -8,5 +8,5 @@
     "port": 5432
   },
   "secretKey": "mern-secret-key",
-  "filePath": "C:\\Users\\User\\Desktop\\HLAM\\testik\\server\\uploads"
+  "filePath": "./uploads"
 }

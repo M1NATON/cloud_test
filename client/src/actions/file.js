@@ -56,3 +56,28 @@ export const deleteFileRequest  = (userId, fileId) => {
         }
     }
 }
+
+
+
+// Функция для скачивания файла
+export const downloadFile = (userId, fileId, fileName) => {
+    return async () => {
+        try {
+            const response = await axios.get(`http://localhost:9000/api/files/download/${userId}/${fileId}`, {
+                responseType: 'blob',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName; // Установите желаемое имя файла
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Download file error', error);
+        }
+    };
+};

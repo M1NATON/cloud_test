@@ -1,5 +1,5 @@
 const fileService = require('../services/fileService');
-const { Pool } = require('pg');
+const {Pool} = require('pg');
 const config = require('config');
 const multer = require('multer');
 const fs = require('fs');
@@ -23,7 +23,7 @@ const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadPath = `uploads/${req.user.id}`;
         if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
+            fs.mkdirSync(uploadPath, {recursive: true});
         }
         cb(null, uploadPath);
     },
@@ -34,7 +34,7 @@ const storage = multer.diskStorage({
 });
 
 
-const upload = multer({ storage: storage });
+const upload = multer({storage: storage});
 
 
 const pool = new Pool({
@@ -50,18 +50,18 @@ class FileController {
         try {
             const {name, type, parent} = req.body;
             const userId = parseInt(req.user.id);
-            const file = { name, type, parent, userId: req.user.id, path: req.body.name };
+            const file = {name, type, parent, userId: req.user.id, path: req.body.name};
             const createDirBd = 'INSERT INTO files(name, type, user_id) VALUES($1, $2, $3) RETURNING *'
             const createdFolder = await fileService.createDir(file);
-            const  a  = await pool.query(createDirBd, [name, type, userId]);
+            const a = await pool.query(createDirBd, [name, type, userId]);
             if (createdFolder.created) {
                 return res.json(file);
             } else {
-                return res.status(400).json({ message: createdFolder.message });
+                return res.status(400).json({message: createdFolder.message});
             }
         } catch (e) {
             console.error(e);
-            return res.status(500).json({ message: 'Internal server error' });
+            return res.status(500).json({message: 'Internal server error'});
         }
     }
 
@@ -72,12 +72,12 @@ class FileController {
 
             // Запрос файлов из базы данных
             const getFilesQuery = 'SELECT * FROM files WHERE user_id = $1';
-            const { rows } = await pool.query(getFilesQuery, [userId]);
+            const {rows} = await pool.query(getFilesQuery, [userId]);
 
             return res.json(rows);
         } catch (error) {
             console.error(error);
-            return res.status(500).json({ message: 'Internal server error' });
+            return res.status(500).json({message: 'Internal server error'});
         }
     }
 
@@ -130,13 +130,14 @@ class FileController {
             const fileResult = await pool.query(fileQuery, [fileId, userId]);
 
             if (fileResult.rows.length === 0) {
-                return res.status(404).json({ message: 'File not found' });
+                return res.status(404).json({message: 'File not found'});
             }
 
             const fileName = fileResult.rows[0].name; // Получаем имя файла из базы данных
             console.log(fileResult.rows[0].name, 'fileResult.rows[0].name')
             // Формируем путь к файлу на основе базовой директории и имени файла
-            const basePath = 'C:\\Users\\User\\Desktop\\HLAM\\testik\\server\\uploads';
+            const basePath = './uploads';
+            // const basePath = 'C:\\Users\\User\\Desktop\\HLAM\\testik\\server\\uploads';
             const filePath = `${basePath}/${userId}/${fileName}`;
 
             // Удаляем файл
@@ -147,19 +148,16 @@ class FileController {
                 const deleteFileQuery = 'DELETE FROM files WHERE id = $1 AND user_id = $2 RETURNING *';
                 const deletedFile = await pool.query(deleteFileQuery, [fileId, userId]);
 
-                return res.json({ message: 'File deleted successfully' });
+                return res.json({message: 'File deleted successfully'});
             } catch (error) {
                 console.error(error);
-                return res.status(500).json({ message: 'Error deleting file or file record' });
+                return res.status(500).json({message: 'Error deleting file or file record'});
             }
         } catch (error) {
             console.error(error);
-            return res.status(500).json({ message: 'Server error' });
+            return res.status(500).json({message: 'Server error'});
         }
     }
-
-
-
 
 
     async uploadFile(req, res) {
@@ -189,7 +187,7 @@ class FileController {
             const fileExists = await pool.query(fileExistsQuery, [req.user.id, path]);
 
             if (fileExists.rows.length > 0) {
-                return res.status(400).json({ message: 'File already exists' });
+                return res.status(400).json({message: 'File already exists'});
             }
 
             console.log('path', path);
@@ -199,22 +197,62 @@ class FileController {
             fs.copyFile(file.path, path, async (err) => {
                 if (err) {
                     console.error(err);
-                    return res.status(500).json({ message: "Upload error" });
+                    return res.status(500).json({message: "Upload error"});
                 }
                 const type = decodeURIComponent(file.originalname).split('.').pop();
 
                 const insertFileQuery = 'INSERT INTO files(name, type, size, path, parent_id, user_id) VALUES($1, $2, $3, $4, $5, $6) RETURNING *';
                 const dbFile = await pool.query(insertFileQuery, [decodeURIComponent(file.originalname), type, file.size, parent.rows[0]?.path, parent.rows[0]?._id, req.user.id]);
-
+                console.log(parent.rows[0], 'parent.rows[0]')
                 await pool.query('UPDATE users SET used_space = $1 WHERE id = $2', [user.rows[0].used_space, req.user.id]);
 
                 res.json(dbFile.rows[0]);
             });
         } catch (e) {
             console.error(e);
-            return res.status(500).json({ message: "Upload error" });
+            return res.status(500).json({message: "Upload error"});
         }
     }
+
+
+    async downloadFile(req, res) {
+        try {
+            const fileId = req.params.fileId;
+            const userId = req.user.id;
+            console.log(fileId, 'fileId')
+            // Получаем информацию о файле по его ID
+            const fileQuery = 'SELECT * FROM files WHERE id = $1 AND user_id = $2';
+            const fileResult = await pool.query(fileQuery, [fileId, userId]);
+
+            if (fileResult.rows.length === 0) {
+                return res.status(404).json({message: 'File not found'});
+            }
+
+            const fileName = fileResult.rows[0].name; // Получаем имя файла из базы данных
+            console.log(fileName, 'fileName')
+
+// Формируем путь к файлу на основе базовой директории и имени файла
+            const basePath = './uploads';
+            // const basePath = 'C:\\Users\\User\\Desktop\\HLAM\\testik\\server\\uploads';
+            const filePath = `${basePath}/${userId}/${fileName}`;
+            console.log('Base Path:', basePath);
+            console.log('User ID:', userId);
+            console.log('File Name:', fileName);
+            console.log('File Path:', filePath);
+
+// Отправляем файл как ответ на запрос
+            res.download(filePath, fileName, (err) => {
+                if (err) {
+                    console.error('Error downloading file:', err);
+                    return res.status(500).json({message: 'Error downloading file'});
+                }
+            });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({message: 'Server error'});
+        }
+    }
+
 
 
 
