@@ -8,6 +8,7 @@ import MyButton from "../UI/button/MyButton";
 import {useDispatch, useSelector} from "react-redux";
 import {logout, selectUsername} from "../../reducers/userReducer";
 import {auth} from "../../actions/user";
+import Profile from "./Profile/Profile";
 
 const Navbar = () => {
     const isAuth = useSelector(state => state.user.isAuth)
@@ -33,7 +34,7 @@ const Navbar = () => {
 
                     {isAuth ?
                         <div>
-                            <MyButton onClick={() => dispatch(logout())}>Выход</MyButton>
+                            <Profile/>
                         </div>
                      :
                         <div className={s.auth}>

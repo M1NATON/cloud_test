@@ -12,6 +12,10 @@ function Disk() {
     const user = useSelector(state => state.user.currentUser);
     const currentDir = useSelector(state => state.user.currentDir);
 
+
+
+
+
     useEffect(() => {
         dispatch(getFile(currentDir))
     }, [currentDir])
