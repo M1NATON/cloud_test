@@ -3,7 +3,7 @@ import s from './Navbar.module.css'
 import './../../app.css'
 import logo from './../../assets/img/logo.svg'
 import {Navigate, NavLink} from "react-router-dom";
-import {AuthContext} from "../../context";
+import {AuthContext} from "../../context/convert";
 import MyButton from "../UI/button/MyButton";
 import {useDispatch, useSelector} from "react-redux";
 import {logout, selectUsername} from "../../reducers/userReducer";

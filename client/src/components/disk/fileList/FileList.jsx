@@ -8,6 +8,7 @@ const FileList = () => {
 
     const files = useSelector(state => state.files.files).map(file => <File key={file.id} file={file}/>)
 
+
     return (
         <div className="container">
             <div className='filelist'>

@@ -1,5 +1,5 @@
 import React, {useContext, useState} from 'react';
-import {AuthContext} from "../../../context";
+import {AuthContext} from "../../../context/convert";
 import s from './Login.module.css'
 import Input from "../../UI/input/Input";
 import {useDispatch} from "react-redux";

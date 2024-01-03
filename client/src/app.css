@@ -24,7 +24,7 @@ body {
 }
 .filelist__header {
     display: grid;
-    grid-template-columns: 1fr 4fr repeat(4, 1fr);
+    grid-template-columns: 1fr 5fr repeat(5, 1fr);
 }
 .filelist__name {
     grid-column-start: 2;
@@ -38,16 +38,39 @@ body {
     justify-self: center;
 }
 
+.btn__basket{
+    background: none;
+    border: none;
+}
+
+
+.img__basket{
+    width: 50px;
+    transition: .3s all;
+    padding: 10px;
+}
+.img__basket:hover{
+    background: #566885;
+    border-radius: 5px;
+}
 
 .file {
     margin: 10px 0;
     border-bottom: solid 2px #566885;
     display: grid;
-    grid-template-columns: 1fr 4fr repeat(4, 1fr);
+    grid-template-columns: 1fr 5fr repeat(5, 1fr);
     align-items: center;
+    transition: .3s all;
 }
 .file:hover {
     transform: scale(1.02);
+    background: #b8bdc4;
+
+}
+.func {
+    display: flex;
+    align-items: center;
+    column-gap: 15px;
 }
 .file__img {
     justify-self: center;
@@ -60,3 +83,55 @@ body {
     grid-column-start: 6;
     justify-self: center;
 }
+
+
+.btn__upload{
+}
+
+.btn__modal__upload{
+    border: none;
+    background: none;
+}
+
+.cloud__upload{
+    width: 70px;
+    transition: .3s all;
+}
+
+.cloud__upload:hover{
+    background: #566885;
+    border-radius: 5px;
+}
+
+.main__upload{
+    position: relative;
+
+}
+
+.upload__modal{
+    position: absolute;
+    top: 70px;
+    left: 0px;
+    z-index: 30;
+
+    background: #566885;
+    width: 500px;
+    padding: 20px;
+    border-radius: 25px;
+
+    display: none;
+}
+
+.upload__modal button{
+    padding: 5px 10px;
+    color: #566885;
+}
+
+
+
+.upload__modal input, button {
+    color: #cfd6dc;
+    font-size: 18px;
+
+}
+

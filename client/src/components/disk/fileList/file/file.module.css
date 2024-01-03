@@ -14,3 +14,7 @@
   grid-template-columns: 1fr 4fr repeat(4, 1fr);
   align-items: center;
 }
+
+.file:hover {
+  background: black;
+}

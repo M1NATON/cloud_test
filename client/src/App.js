@@ -5,7 +5,7 @@ import Registration from "./components/authorization/registration/Registration";
 import Disk from "./components/disk/Disk";
 import React, { Component }  from 'react';
 import {useEffect, useState} from "react";
-import {AuthContext} from "./context";
+import {AuthContext} from "./context/convert";
 import AppRouter from "./components/AppRouter";
 import axios from "axios";
 import {useDispatch, useSelector} from "react-redux";
@@ -29,9 +29,6 @@ function App() {
 
             <BrowserRouter>
                 <Navbar/>
-                <div className="App">
-                    <h1>Client</h1>
-                </div>
                 <div className="wrap">
                     <AppRouter/>
                 </div>

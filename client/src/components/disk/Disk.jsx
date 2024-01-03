@@ -21,8 +21,7 @@ function Disk() {
     }, [currentDir])
 
     return (
-        <div>
-            <h1>Username: {user.email}</h1>
+        <div className='container'>
             <FileUploadComponent/>
             <FileList/>
         </div>

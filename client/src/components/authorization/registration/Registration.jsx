@@ -1,7 +1,7 @@
 import React, {useContext, useState} from 'react';
 import s from "./Registration.module.css";
 import Input from "../../UI/input/Input";
-import {AuthContext} from "../../../context";
+import {AuthContext} from "../../../context/convert";
 import {registration} from "../../../actions/user";
 
 const Registration = () => {

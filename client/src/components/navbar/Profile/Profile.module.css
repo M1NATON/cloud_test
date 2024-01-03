@@ -37,7 +37,7 @@
 
     z-index: 3;
 
-    display: block;
+    display: none;
     text-align: center;
 }
 
@@ -58,4 +58,35 @@
 
 .btn__module:hover {
     color: #fff;
+}
+
+.close__modal{
+    position: absolute;
+    color: black;
+    top: 10px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.profile__module{
+    position: absolute;
+    top: 200px;
+    right: 200px;
+
+    width: 700px;
+    height: 400px;
+    border-radius: 25px;
+
+    background: #566885;
+
+    z-index: 12;
+
+    padding: 50px;
+    display: none;
+    align-items: center;
+}
+
+.profile__module h1{
+    color: #cfd6dc;
 }
